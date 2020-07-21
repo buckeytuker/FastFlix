@@ -94,11 +94,11 @@ class RAV1E(QtWidgets.QWidget):
         label = QtWidgets.QLabel("Tune")
         label.setToolTip("Quality tuning")
         layout.addWidget(label)
-        self.widgets.speed = QtWidgets.QComboBox()
-        self.widgets.speed.addItems(["Psychovisual", "Psnr"])
-        self.widgets.speed.setCurrentIndex(0)
-        self.widgets.speed.currentIndexChanged.connect(lambda: self.main.page_update())
-        layout.addWidget(self.widgets.speed)
+        self.widgets.tune = QtWidgets.QComboBox()
+        self.widgets.tune.addItems(["Psychovisual", "Psnr"])
+        self.widgets.tune.setCurrentIndex(0)
+        self.widgets.tune.currentIndexChanged.connect(lambda: self.main.page_update())
+        layout.addWidget(self.widgets.tune)
         return layout
 
     def init_color_primaries(self):

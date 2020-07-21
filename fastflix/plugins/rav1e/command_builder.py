@@ -151,6 +151,7 @@ def build(
     duration=None,
     audio_tracks=(),
     subtitle_tracks=(),
+    two_pass=False,
     disable_hdr=False,
     side_data=None,
     speed=6,
@@ -170,60 +171,74 @@ def build(
 
     # ffmpeg -i 20200702_195828.mp4 -t 5 -f yuv4mpegpipe -s 1920x1080 -pix_fmt yuv420p - | ./rav1e - --speed 10 --output test.ivf
 
-    command = (
-        f'"{{ffmpeg}}" -y '
-        f' {f"-ss {start_time}" if start_time else ""}  '
+    ffmpeg_start = (
+        f'"{{ffmpeg}}" -y -loglevel quiet '
+        f'{f"-ss {start_time}" if start_time else ""} '
         f'{f"-t {duration}" if duration else ""} '
         f'-i "{source}" '
         f"{filters}"
         f"-map 0:{video_track} "
         "-f yuv4mpegpipe -pix_fmt yuv420p - | "
-        "{rav1e} - -y"
-        f"--speed {speed}"
-        '--output "<tempfile.1.ivf>"'  # {output}"
     )
 
     audio_file = "<tempfile.2.mkv>"
+    if bitrate:
+        commands = [
+            Command(
+                f'{ffmpeg_start} "{{rav1e}}" - -y --speed {speed} --first-pass "<tempfile.0.log>"',
+                ["ffmpeg", "rav1e"],
+                None,
+                "Bitrate First Pass",
+            ),
+            Command(
+                f'{ffmpeg_start} "{{rav1e}}" - -y --speed {speed} '
+                '--second-pass "<tempfile.0.log>" --output "<tempfile.1.ivf>"',
+                ["ffmpeg", "rav1e", "output"],
+                None,
+                "Bitrate Second Pass",
+            ),
+        ]
+    else:
+        commands = [
+            Command(
+                f'{ffmpeg_start} {{rav1e}} - -y --speed {speed} --quantizer {qp} --output "<tempfile.1.ivf>',
+                ["ffmpeg", "rav1e"],
+                None,
+                "QP single pass",
+            )
+        ]
 
-    command_audio = Command(
-        (
-            f'"{{ffmpeg}}" -y '
-            f'{f"-ss {start_time}" if start_time else ""} '
-            f'{f"-t {duration - start_time}" if duration else ""} '
-            f'-i "{source}" '
-            f'{audio} {subtitles} "{audio_file}"'
-        ),
-        ["ffmpeg"],
-        False,
-        exe="ffmpeg",
-        name="Split audio at proper time offsets into new file",
+    commands.append(
+            Command(
+                (
+                    f'"{{ffmpeg}}" -y '
+                    f'{f"-ss {start_time}" if start_time else ""} '
+                    f'{f"-t {duration - start_time}" if duration else ""} '
+                    f'-i "{source}" '
+                    f'{audio} {subtitles} "{audio_file}"'
+                ),
+                ["ffmpeg"],
+                False,
+                exe="ffmpeg",
+                name="Split audio at proper time offsets into new file",
+            )
+        )
+
+    commands.append(
+        Command(
+            (
+                f'"{{ffmpeg}}" -y '
+                f'-i "<tempfile.1.ivf>" -i "{audio_file}" '
+                f'{"-map_metadata -1 -shortest -reset_timestamps 1" if start_time or duration else ""} '
+                f"-c copy -map 0:v -map 1:a "
+                # -af "aresample=async=1:min_hard_comp=0.100000:first_pts=0"
+                f'"{{output}}"'
+            ),
+            ["ffmpeg", "output"],
+            False,
+            exe="ffmpeg",
+            name="Combine audio and video files into MKV container",
+        )
     )
 
-    command_3 = Command(
-        (
-            f'"{{ffmpeg}}" -y '
-            f'-i "<tempfile.1.ivf>" -i "{audio_file}" '
-            f'{"-map_metadata -1 -shortest -reset_timestamps 1" if start_time or duration else ""} '
-            f"-c copy -map 0:v -map 1:a "
-            # -af "aresample=async=1:min_hard_comp=0.100000:first_pts=0"
-            f'"{{output}}"'
-        ),
-        ["ffmpeg", "output"],
-        False,
-        exe="ffmpeg",
-        name="Combine audio and video files into MKV container",
-    )
-
-    return [Command(command, ["ffmpeg", "rav1e"], False, name="Single Pass QP"), command_audio, command_3]
-    # beginning = re.sub("[ ]+", " ", beginning)
-    #
-    # if bitrate:
-    #     command_1 = f'{beginning} -passlogfile "<tempfile.1.log>" -b:v {bitrate} -pass 1 -an -f matroska {ending}'
-    #     command_2 = f'{beginning} -passlogfile "<tempfile.1.log>" -b:v {bitrate} -pass 2 {audio} "{{output}}"'
-    #     return [
-    #         helpers.Command(command_1, ["ffmpeg", "output"], False, name="First Pass bitrate"),
-    #         helpers.Command(command_2, ["ffmpeg", "output"], False, name="Second Pass bitrate"),
-    #     ]
-    # elif crf:
-    #     command_1 = f'{beginning} -b:v 0 -crf {crf} {audio} "{{output}}"'
-    #     return [helpers.Command(command_1, ["ffmpeg", "output"], False, name="Single Pass CRF")]
+    return commands

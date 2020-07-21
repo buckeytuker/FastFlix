@@ -2,7 +2,7 @@ appdirs
 pyinstaller
 pypiwin32
 PySide2==5.14.2.2
-python-box
+python-box[all]
 requests
 reusables
 ruamel.yaml
