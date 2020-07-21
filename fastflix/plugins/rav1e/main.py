@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-name = "av1 (SVT AV1)"
+name = "AV1 (rav1e)"
 
 video_extension = "mkv"
 video_dimension_divisor = 8
 
-enable_subtitles = False
+enable_subtitles = True
 enable_audio = True
 
 audio_formats = [
@@ -54,5 +54,5 @@ audio_formats = [
     "pcm_u8",
 ]
 
-from fastflix.plugins.svt_av1.command_builder import build
-from fastflix.plugins.svt_av1.settings_panel import AV1 as settings_panel
+from fastflix.plugins.rav1e.command_builder import build
+from fastflix.plugins.rav1e.settings_panel import RAV1E as settings_panel

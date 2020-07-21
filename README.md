@@ -31,9 +31,38 @@ View the [releases](https://github.com/cdgriffith/FastFlix/releases) for 64 bit 
 
 Please use [pipx](https://pipxproject.github.io/pipx/installation/) to install as a properly virtualized app
 
+### pipx setup
+
+**MacOS**
+```
+brew install pipx
+pipx ensurepath
+```
+
+**Linux**
+```
+python3 -m pip install --user pipx
+python3 -m pipx ensurepath
+```
+
+### Install and run fastflix
+
 ```
 pipx install fastflix
 ```
+
+Then you can launch it from command line.
+
+```
+fastflix
+```
+
+To check for newer versions, run:
+
+```
+pipx upgrade fastflix
+```
+
 
 ## Running from source code or without pipx
 
@@ -43,7 +72,15 @@ cd FastFlix
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
-python -m flix
+python -m fastflix
+```
+
+If you switch terminals or close the one you were in, don't forget to reactivate the virtaulenv before trying to run it!
+
+```
+cd FastFlix
+. venv/bin/activate
+python -m fastflix
 ```
 
 # License

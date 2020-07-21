@@ -144,7 +144,7 @@ class Worker(QtCore.QThread):
             stdout=PIPE,
             stderr=STDOUT,
             universal_newlines=True,
-            preexec_fn=os.setsid if not reusables.win_based else None,
+            start_new_session=True,
         )
 
     def is_alive(self):

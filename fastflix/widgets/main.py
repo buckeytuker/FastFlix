@@ -28,8 +28,9 @@ def load_plugins(enable_svt_av1=True):
     from fastflix.plugins.svt_av1 import main as svt_av1_plugin
     from fastflix.plugins.gif import main as gif_plugin
     from fastflix.plugins.vp9 import main as vp9_plugin
+    from fastflix.plugins.rav1e import main as rav1e_plugin
 
-    plugins = [av1_plugin, hevc_plugin, gif_plugin, vp9_plugin]
+    plugins = [av1_plugin, hevc_plugin, gif_plugin, vp9_plugin, rav1e_plugin]
     if enable_svt_av1:
         plugins.append(svt_av1_plugin)
     return {plugin.name: plugin for plugin in plugins}
@@ -54,6 +55,7 @@ class Main(QtWidgets.QWidget):
         self.ffmpeg = ffmpeg
         self.ffprobe = ffprobe
         self.svt_av1 = svt_av1
+        self.rav1e = "/home/chris/Downloads/rav1e"
 
         self.input_defaults = Box(scale=None, crop=None)
         self.initial_duration = 0
@@ -812,14 +814,21 @@ class Main(QtWidgets.QWidget):
         for item in commands:
             if item.item == "command":
                 item.command = item.command.format(
-                    ffmpeg=self.ffmpeg, ffprobe=self.ffprobe, av1=self.svt_av1, output=self.output_video
+                    ffmpeg=self.ffmpeg,
+                    ffprobe=self.ffprobe,
+                    av1=self.svt_av1,
+                    rav1e=self.rav1e,
+                    output=self.output_video,
                 )
             elif item.item == "loop":
                 for sub_item in item.commands:
                     sub_item.command = sub_item.command.format(
-                        ffmpeg=self.ffmpeg, ffprobe=self.ffprobe, av1=self.svt_av1, output=self.output_video
+                        ffmpeg=self.ffmpeg,
+                        ffprobe=self.ffprobe,
+                        av1=self.svt_av1,
+                        rav1e=self.rav1e,
+                        output=self.output_video,
                     )
-
         self.widgets.convert_button.setText("⛔ Cancel")
         self.widgets.convert_button.setStyleSheet("background-color:red;")
         self.converting = True
