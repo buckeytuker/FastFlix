@@ -107,6 +107,8 @@ class Main(QtWidgets.QWidget):
             fast_time=None,
         )
 
+        self.range_labels = Box()
+
         self.thumb_file = Path(self.path.work, "thumbnail_preview.png")
         self.flix = flix
         self.plugins = load_plugins(self.flix.config)
@@ -185,8 +187,89 @@ class Main(QtWidgets.QWidget):
         transform_layout.addLayout(metadata_layout)
 
         layout.addLayout(transform_layout)
+
+        #
+        # hdr_layout = QtWidgets.QHBoxLayout()
+        # hdr_image_path = str(Path(pkg_resources.resource_filename(__name__, f"../data/hdr/hdr.png")).resolve())
+        # hdr10_image_path = str(Path(pkg_resources.resource_filename(__name__, f"../data/hdr/hdr10.png")).resolve())
+        # hdr10plus_image_path = str(Path(pkg_resources.resource_filename(__name__, f"../data/hdr/hdr10plus.png")).resolve())
+        #
+        # hw = QtWidgets.QLabel()
+        # hdr_pixmap = QtGui.QPixmap(hdr_image_path)
+        # hdr_pixmap = hdr_pixmap.scaled(100, 100, QtCore.Qt.KeepAspectRatio)
+        # hw.setPixmap(hdr_pixmap)
+        #
+        # hw1 = QtWidgets.QLabel()
+        # hdr10_pixmap = QtGui.QPixmap(hdr10_image_path)
+        # hdr10_pixmap = hdr10_pixmap.scaled(160, 160, QtCore.Qt.KeepAspectRatio)
+        # hw1.setPixmap(hdr10_pixmap)
+        #
+        # hwplus = QtWidgets.QLabel()
+        # hdr10plus_pixmap = QtGui.QPixmap(hdr10plus_image_path)
+        # hdr10plus_pixmap = hdr10plus_pixmap.scaled(175, 175, QtCore.Qt.KeepAspectRatio)
+        # hwplus.setPixmap(hdr10plus_pixmap)
+        #
+        # l1 = QtWidgets.QLabel()
+        # l1.setFixedWidth(70)
+        #
+        # l2 = QtWidgets.QLabel()
+        # l2.setFixedWidth(70)
+        #
+        # hdr_layout.addWidget(hw)
+        # hdr_layout.addStretch()
+        # hdr_layout.addWidget(hw1)
+        # hdr_layout.addStretch()
+        # hdr_layout.addWidget(hwplus)
+        #
+        #
+        # layout.addLayout(hdr_layout)
+        range_layout = self.init_range_labels()
+        layout.addLayout(range_layout)
         layout.addStretch()
         self.grid.addLayout(layout, 0, 0, 6, 6)
+
+    def init_range_labels(self):
+        font_db = QtGui.QFontDatabase()
+        contrax_font = str(Path(pkg_resources.resource_filename(__name__, f"../data/fonts/conthrax-sb.ttf")).resolve())
+
+        font_id = font_db.addApplicationFont(contrax_font)
+        families = font_db.applicationFontFamilies(font_id)
+        your_ttf_font = QtGui.QFont(families[0])
+
+        self.range_labels.sd_label = QtWidgets.QLabel("SD")
+        self.range_labels.sd_label.setFont(your_ttf_font)
+
+        self.range_labels.hdr_label = QtWidgets.QLabel("HDR")
+        self.range_labels.hdr_label.setFont(your_ttf_font)
+
+        self.range_labels.hdr10_label = QtWidgets.QLabel("HDR 10")
+        self.range_labels.hdr10_label.setFont(your_ttf_font)
+
+        self.range_labels.hdr10_plus_label = QtWidgets.QLabel("HDR 10+")
+        self.range_labels.hdr10_plus_label.setFont(your_ttf_font)
+
+        layout = QtWidgets.QHBoxLayout()
+
+        self.range_labels.sd_label.setVisible(False)
+
+        self.range_labels.hdr_label.setVisible(False)
+
+        self.range_labels.sd_label_spacer = QtWidgets.QLabel()
+        self.range_labels.sd_label_spacer.setVisible(False)
+
+        self.range_labels.hdr_label_spacer = QtWidgets.QLabel()
+        self.range_labels.hdr_label_spacer.setVisible(False)
+
+        layout.addWidget(QtWidgets.QLabel("Range: "))
+        layout.addWidget(self.range_labels.sd_label)
+        layout.addWidget(self.range_labels.sd_label_spacer)
+        layout.addWidget(self.range_labels.hdr_label)
+        layout.addWidget(self.range_labels.hdr_label_spacer)
+        layout.addWidget(self.range_labels.hdr10_label)
+        layout.addWidget(QtWidgets.QLabel())
+        layout.addWidget(self.range_labels.hdr10_plus_label)
+        layout.addStretch()
+        return layout
 
     def init_scale_and_crop(self):
         layout = QtWidgets.QVBoxLayout()
